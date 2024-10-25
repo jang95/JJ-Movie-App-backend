@@ -3,8 +3,6 @@ import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import User, { IUser } from '../schemas/user';
 import { loginService } from '../services/authService';
-// import Review from '../schemas/review';
-// import { loginService } from '../services/authService';
 
 interface IUserRequest {
   email: string;
@@ -24,7 +22,7 @@ export const register = async (req: Request, res: Response) => {
       return;
     }
 
-    const hashPasswoard = bcrypt.hash(password, 10);
+    const hashPasswoard = await bcrypt.hash(password, 10);
 
     // 새 사용자 생성
     const newUser = new User({

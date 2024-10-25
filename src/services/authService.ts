@@ -1,7 +1,12 @@
 import User, { IUser } from '../schemas/user';
+import dotenv from 'dotenv';
 import { generateToken } from '../utils/authUtils';
 import bcrypt from 'bcryptjs';
 import { Schema } from 'mongoose';
+
+dotenv.config({
+  path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
+});
 
 const ACCESS_TOKEN_EXPIRES = '15m';
 const REFRESH_TOKEN_EXPIRES = '7d';
@@ -30,6 +35,11 @@ export const loginService = async (
   if (!matchPassword) {
     console.log(`로그인 실패: 비밀번호 불일치 (${email})`);
     return null;
+  }
+
+  // 환경 변수 확인
+  if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
+    throw new Error('JWT 환경 변수가 설정되지 않았습니다.');
   }
 
   // 토큰에 들어갈 내용

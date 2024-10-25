@@ -1,7 +1,11 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
-dotenv.config();
+dotenv.config({
+  path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
+});
+
+const mongoURI = process.env.MONGO_URI;
 
 // mongoose.connection
 // Mongoose와 MongoDB 서버 간의 연결 상태를 나타내는 객체
@@ -21,8 +25,6 @@ let retryCount = 0;
 const maxRetries = 5;
 
 export const connectMongoDB = async () => {
-  const mongoURI = process.env.MONGO_URI;
-
   if (!mongoURI) {
     console.error('MONGO_URI 환경 변수가 설정되지 않았습니다.');
     process.exit(1); // 환경 변수 오류 발생 시 프로세스 종료
@@ -42,7 +44,7 @@ export const connectMongoDB = async () => {
       console.error('최대 재연결 시도 횟수를 초과했습니다. 서버를 종료합니다.');
       process.exit(1); // 최대 재연결 시도 횟수를 초과하면 프로세스 종료
     } else {
-      setTimeout(connectMongoDB, 3000); // 3초 후 재연결 시도
+      setTimeout(connectMongoDB, Number(process.env.PORT)); // 3초 후 재연결 시도
     }
   }
 };
