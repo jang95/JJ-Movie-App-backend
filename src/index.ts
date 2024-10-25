@@ -8,12 +8,9 @@ const app = express();
 
 // CORS 설정
 const corsOptions = {
-  origin: ['https://localhost:5173', 'https://jj-movie-engine.netlify.app'],
-  credentials: true,
-  optionsSuccessStatus: 200,
+  origin: '*',
 };
 
-// CORS 미들웨어 적용
 app.use(cors(corsOptions));
 
 app.use(cookieParser());
