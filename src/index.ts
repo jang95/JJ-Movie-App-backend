@@ -9,6 +9,7 @@ const app = express();
 // CORS 설정
 const corsOptions = {
   origin: '*',
+  credentials: true, // 쿠키 전송 허용
 };
 
 app.use(cors(corsOptions));
