@@ -14,12 +14,12 @@ const credentials = { key: privateKey, cert: certificate };
 export const startServer = async (app: Application) => {
   try {
     await connectMongoDB();
-    // app.listen(process.env.PORT, () => {
-    //   console.log(`${process.env.PORT}번 포트 실행 완료`);
-    // });
-    https.createServer(credentials, app).listen(process.env.PORT, () => {
-      console.log(`${process.env.PORT}번 포트에서 HTTPS 서버 실행 완료`);
+    app.listen(process.env.PORT, () => {
+      console.log(`${process.env.PORT}번 포트 실행 완료`);
     });
+    // https.createServer(credentials, app).listen(process.env.PORT, () => {
+    //   console.log(`${process.env.PORT}번 포트에서 HTTPS 서버 실행 완료`);
+    // });
   } catch (error) {
     console.error('서버 연결 실패', error);
     process.exit(1); // 프로세스 종료
