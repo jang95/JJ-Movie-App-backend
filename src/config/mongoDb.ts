@@ -5,7 +5,9 @@ dotenv.config({
   path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
 });
 
-const mongoURI = process.env.MONGO_URI;
+const MONGO_URL = process.env.MONGO_URL;
+
+console.log('mongoURI', MONGO_URL);
 
 // mongoose.connection
 // Mongoose와 MongoDB 서버 간의 연결 상태를 나타내는 객체
@@ -25,13 +27,13 @@ let retryCount = 0;
 const maxRetries = 5;
 
 export const connectMongoDB = async () => {
-  if (!mongoURI) {
+  if (!MONGO_URL) {
     console.error('MONGO_URI 환경 변수가 설정되지 않았습니다.');
     process.exit(1); // 환경 변수 오류 발생 시 프로세스 종료
   }
 
   try {
-    await mongoose.connect(mongoURI);
+    await mongoose.connect(MONGO_URL);
     console.log('MongoDB에 성공적으로 연결되었습니다!');
   } catch (error) {
     retryCount += 1;
