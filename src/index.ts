@@ -8,7 +8,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'https://jj-movie-engine.netlify.app'],
+    origin: ['https://localhost:5173', 'https://jj-movie-engine.netlify.app'],
     credentials: true,
   })
 );
