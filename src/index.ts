@@ -7,13 +7,20 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const app = express();
 
-// CORS 설정
-// const corsOptions = {
-//   origin: '*',
-//   credentials: true, // 쿠키 전송 허용
-// };
+app.use(
+  cors({
+    origin: ['https://localhost:5173', 'https://jj-movie-engine.netlify.app'], // 허용할 origin 설정
+    credentials: true,
+  })
+);
 
-// app.use(cors(corsOptions));
+app.options('*', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.sendStatus(204);
+});
 
 app.use(
   '/api',
