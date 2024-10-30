@@ -3,12 +3,12 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { startServer } from './server';
 import authRoutes from './routes/authRoutes';
+import reviewRoutes from './routes/reviewRoutes';
 
 const app = express();
 
-// CORS 설정
 const corsOptions = {
-  origin: '*',
+  origin: ['http://localhost:5173', 'https://jj-movie-engine.netlify.app'],
   credentials: true, // 쿠키 전송 허용
 };
 
@@ -18,11 +18,9 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 라우트 설정
 app.use('/', authRoutes);
-// app.use('/review', reviewRoutes);
+app.use('/review', reviewRoutes);
 
-// 서버 시작
 startServer(app);
 
 export default app;
