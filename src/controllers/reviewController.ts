@@ -191,7 +191,7 @@ export const findUserReviews = async (req: Request, res: Response) => {
 
     res
       .status(200)
-      .json({ message: '사용자 리뷰 조회', success: true, data: reviews });
+      .json({ message: '사용자 리뷰 조회', success: true, reviews });
   } catch (error) {
     console.error('사용자의 리뷰를 가져오는데 실패했습니다.', error);
     res.status(500).json({
