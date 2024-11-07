@@ -6,6 +6,7 @@ export interface IUser {
   nickName: string;
   email: string;
   password: string;
+  refreshToken: string;
   createdAt?: Date;
 }
 
@@ -23,6 +24,10 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
       required: true,
+    },
+    refreshToken: {
+      type: String,
+      required: false,
     },
   },
   /**

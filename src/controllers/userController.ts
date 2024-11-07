@@ -2,7 +2,11 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import User, { IUser } from '../schemas/user';
-import { loginService } from '../services/authService';
+import {
+  loginService,
+  LoginDataType,
+  createAccessTokenForUser,
+} from '../services/authService';
 
 interface IUserRequest {
   email: string;
@@ -29,6 +33,7 @@ export const register = async (req: Request, res: Response) => {
       nickName,
       email,
       password: hashPasswoard,
+      refreshToken: '',
     });
 
     // 사용자 저장
@@ -57,21 +62,47 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body as IUserRequest;
 
-    const loginData = await loginService(email, password);
+    const { user, accessToken, refreshToken } = (await loginService(
+      email,
+      password
+    )) as LoginDataType;
 
-    if (!loginData) {
+    if (!user) {
       res.status(400).json({
         message: '이메일 또는 비밀번호가 잘못되었습니다.',
         success: false,
       });
+      return;
     }
 
-    if (loginData) {
+    if (user) {
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/',
+      });
+
+      const updateRefreshToken = await User.findOneAndUpdate(
+        { _id: user._id },
+        { $set: { refreshToken: refreshToken } },
+        { new: true }
+      );
+
+      if (!updateRefreshToken) {
+        res.status(401).json({
+          message: 'refreshToken 갱신 실패',
+          success: false,
+        });
+        return;
+      }
+
       res.status(200).json({
         message: '로그인 성공',
         success: true,
-        accessToken: loginData.accessToken,
-        user: loginData.user,
+        accessToken: accessToken,
+        user: user,
       });
     }
   } catch (error) {
@@ -82,13 +113,26 @@ export const login = async (req: Request, res: Response) => {
 
 // 로그아웃
 export const logout = async (req: Request, res: Response) => {
+  const { refreshToken } = req.cookies;
   try {
-    // Todo
-    // 데이터베이스에서 refreshToken 삭제
+    // DB에서 지우기
+    const deleteRefreshToken = await User.findOneAndUpdate(
+      { refreshToken: refreshToken },
+      { $unset: { refreshToken: '' } },
+      { new: true }
+    );
+
+    if (!deleteRefreshToken) {
+      res
+        .status(400)
+        .json({ message: '서버에서 refreshToken를 찾지 못했습니다.' });
+    }
+
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      path: '/',
     });
 
     res.status(200).json({ message: '로그아웃 성공' });
@@ -114,5 +158,31 @@ export const withdrawal = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('회원탈퇴 오류:', error);
     res.status(500).json({ message: '서버 오류로 회원탈퇴에 실패했습니다.' });
+  }
+};
+
+// 토큰 재발급
+export const refreshAccessToken = async (req: Request, res: Response) => {
+  const { refreshToken } = req.cookies;
+
+  if (!refreshToken) {
+    res
+      .status(401)
+      .json({ message: 'RefreshToken 확인되지 않습니다', success: false });
+    return;
+  }
+
+  const checkUser = await User.findOne({ refreshToken });
+
+  if (checkUser) {
+    const { user, accessToken } = createAccessTokenForUser(checkUser);
+
+    res.status(201).json({
+      message: '토큰 재발급',
+      sucess: true,
+      userData: user,
+      accessToken,
+    });
+    return;
   }
 };
